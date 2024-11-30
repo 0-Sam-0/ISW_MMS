@@ -1,0 +1,46 @@
+services:
+  server:
+    image: php:apache
+    ports:
+      - "8080:80"
+    volumes:
+      - ./server:/var/www/html
+      - ./settings/apache2.conf:/etc/apache2/apache2.conf
+    networks:
+      - internal_project_net
+
+  client:
+    image: php:apache
+    ports:
+      - "8081:80"
+    volumes:
+      - ./client:/var/www/html
+      - ./settings/apache2.conf:/etc/apache2/apache2.conf
+    networks:
+      - internal_project_net
+    depends_on:
+      - server
+
+  db:
+    image: mysql
+    env_file:
+      - ./.env.db
+    volumes:
+      - "./db:/docker-entrypoint-initdb.d"
+    networks:
+      - internal_project_net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    networks:
+      - internal_project_net
+
+networks:
+  internal_project_net:
+    name: internal_project_net
+    driver: bridge
